@@ -15,14 +15,44 @@ namespace WebApiAutores.Controllers
             this.context = context;
         }
 
-        [HttpGet]
+        [HttpGet] 
+        // [HttpGet("listado")] api/autores/listado
+        // [HttpGet("/listado")] listado "remplaza la ruta principal"
         public async Task<ActionResult<List<Autor>>> Get()
         {
             return await context.Autores.Include(x => x.Libros).ToListAsync();
         }
 
+        [HttpGet("primero")]
+        public async Task<ActionResult<Autor>> PrimerAutor([FromHeader] int miValor, [FromQuery] string nombre)
+        {
+            return await context.Autores.FirstOrDefaultAsync();
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<Autor>> Get(int id)
+        {
+            var autor = await context.Autores.FirstOrDefaultAsync(x => x.Id == id);
+            if (autor == null)
+            {
+                return NotFound();
+            }
+            return autor;
+        }
+
+        [HttpGet("{nombre}")]
+        public async Task<ActionResult<Autor>> Get([FromRoute] string nombre)
+        {
+            var autor = await context.Autores.FirstOrDefaultAsync(x => x.Name == nombre);
+            if (autor == null)
+            {
+                return NotFound();
+            }
+            return autor;
+        }
+
         [HttpPost]
-        public async Task<ActionResult> Post(Autor autor) 
+        public async Task<ActionResult> Post([FromBody] Autor autor) 
         {
             context.Add(autor);
             await context.SaveChangesAsync();
@@ -50,6 +80,11 @@ namespace WebApiAutores.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        // [HttpDelete("{id:int}/{param2}")] "Doble parametro"
+        // [HttpDelete("{id:int}/{param2?}")] "Doble parametro opcional"
+        // [HttpDelete("{id:int}/{param2 = valor}")] "Doble parametro por defecto"
+
+
         public async Task<ActionResult> Delete(int id)
         {
             var existe = await context.Autores.AnyAsync(x => x.Id == id);
